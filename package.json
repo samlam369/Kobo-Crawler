@@ -1,6 +1,27 @@
 {
   "dependencies": {
+    "chromedriver": "^134.0.1",
+    "geckodriver": "^5.0.0",
     "save": "^2.9.0",
     "selenium-webdriver": "^4.29.0"
-  }
+  },
+  "name": "kobo-crawler",
+  "version": "1.0.0",
+  "description": "",
+  "main": "work.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/samlam369/Kobo-Crawler.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/samlam369/Kobo-Crawler/issues"
+  },
+  "homepage": "https://github.com/samlam369/Kobo-Crawler#readme"
 }
