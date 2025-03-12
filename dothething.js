@@ -1,4 +1,4 @@
-const {By,Key,Builder} = require("selenium-webdriver");
+const {By,Key,Builder, Capabilities} = require("selenium-webdriver");
 require("chromedriver");
 
 /**
@@ -23,28 +23,26 @@ async function extractweeklySalesLinks(cards) {
     console.log("Starting the job");
 
     const driver = await new Builder().forBrowser('chrome').build();
+    
 
     try {
-        console.log("Navigating to the Kobo blog page");
-        await driver.manage().setTimeouts({ implicit: 5000 });
-        await driver.get('https://www.kobo.com/zh/blog');
+        
+        // console.log("Navigating to the Kobo blog page");
+        // await driver.manage().setTimeouts({ implicit: 5000 });
+        // await driver.get('https://www.kobo.com/zh/blog');
 
-        console.log("Waiting for card elements to load");
-        const cards = await driver.wait(
-            async () => {
-                const elements = await driver.findElements(By.css('.card'));
-                return elements.length > 0 ? elements : null;
-            },
-            10000
-        );
+        // console.log("Waiting for card elements to load");
+        // const cards = await driver.findElements(By.css('.card'));
 
-        console.log("Extracting target links from the cards");
-        const weeklySalesLinks = await extractweeklySalesLinks(cards);
+        // console.log("Extracting target links from the cards");
+        // const weeklySalesLinks = await extractweeklySalesLinks(cards);
+        
+        // Hard-coding the link to the latest sales
+        const weeklySalesLinks = ['https://www.kobo.com/zh/blog/weekly-dd99-2025-w10'];
         console.log("Weekly Sales:", weeklySalesLinks);
 
         console.log("Navigating to the latest sales link");
         await driver.get(weeklySalesLinks[0]);
-
         console.log("Page title:", await driver.getTitle());
 
     } finally {
