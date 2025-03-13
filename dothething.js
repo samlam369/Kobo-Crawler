@@ -10,7 +10,6 @@ async function extractweeklySalesLinks(cards) {
     const weeklySalesLinks = [];
     for (const card of cards) {
         const text = await card.getText();
-        // console.log("Card text:", text);
         if (text.includes('【一週99書單】')) {
             const link = await card.findElement(By.css('a.card__link')).getAttribute('href');
             weeklySalesLinks.push(link);
@@ -29,14 +28,26 @@ async function extractDailyDeals(blocks) {
     });
 
 
-    // for (const pair of dailyDealsRaw) {
-    //     const title = await pair[0].findElement(By.css('h3')).getText();
-    //     const link = await pair[0].findElement(By.css('a')).getAttribute('href');
-    //     const image = await pair[0].findElement(By.css('img')).getAttribute('src');
-    //     const price = await pair[1].findElement(By.css('span')).getText();
-    //     dailyDeals.push({ title, link, image, price });
-    // }
-
+    for (const pair of dailyDealsRaw) {
+        const titleLine = await pair[0].findElement(By.css('h3')).getText();
+        const date = titleLine.substring(0, titleLine.indexOf('週'));
+        console.log("Date:", date);
+        const link = await pair[0].findElement(By.css('a')).getAttribute('href');
+        console.log("Link:", link);
+        const title = await pair[1].findElement(By.css('.title')).getText();
+        console.log("Title:", title);
+        const author = await pair[1].findElement(By.css('.author')).getText();
+        console.log("Author:", author);
+        const image = await pair[1].findElement(By.css('img')).getAttribute('src');
+        console.log("Image:", image);
+        dailyDeals.push({
+            'date': date,
+            'link': link,        
+            'title': title,
+            'author': author,
+            'image': image});
+    }
+    console.log("Daily Deals:", JSON.stringify(dailyDeals));
     return dailyDeals;
 }
 
