@@ -18,37 +18,74 @@ async function extractweeklySalesLinks(cards) {
     return weeklySalesLinks;
 }
 
+
+function formatDate(dateStr) {
+    const currentYear = new Date().getFullYear();
+    const [month, day] = dateStr.split('/').map(num => num.padStart(2, '0'));
+    return `${currentYear}-${month}-${day}`;
+}
+
+
+
 async function extractDailyDeals(blocks) {
     const dailyDeals = [];
-    const dailyDealsRaw = [];
-
+    const booksOf8 = [];
 
     [0, 2, 4, 6, 8, 10, 12, 14].forEach(i => {
-        dailyDealsRaw.push([blocks[i], blocks[i + 1]]);
+        booksOf8.push([blocks[i], blocks[i + 1]]);
     });
 
+    for (const book of booksOf8) {
+        const deal = {};
 
-    for (const pair of dailyDealsRaw) {
-        const titleLine = await pair[0].findElement(By.css('h3')).getText();
-        const date = titleLine.substring(0, titleLine.indexOf('週'));
-        console.log("Date:", date);
-        const link = await pair[0].findElement(By.css('a')).getAttribute('href');
-        console.log("Link:", link);
-        const title = await pair[1].findElement(By.css('.title')).getText();
-        console.log("Title:", title);
-        const author = await pair[1].findElement(By.css('.author')).getText();
-        console.log("Author:", author);
-        const image = await pair[1].findElement(By.css('img')).getAttribute('src');
-        console.log("Image:", image);
-        dailyDeals.push({
-            'date': date,
-            'link': link,        
-            'title': title,
-            'author': author,
-            'image': image});
+        const titleLine = await book[0].findElement(By.css('h3')).getText();
+        deal.date = formatDate(titleLine.split('週').shift());
+        
+        const title = await book[0].findElement(By.css('a')).getText();
+        deal.title = title;
+        
+        const author = await book[1].findElement(By.css('.author')).getText();
+        deal.author = author.slice(2, -2);
+
+        const salesCopy = await book[0].findElement(By.css('p')).getText();
+        deal.salesCopy = salesCopy;
+
+        const link = await book[0].findElement(By.css('a')).getAttribute('href');
+        deal.link = link.split("?utm_source").shift();
+        
+        const bookCover = await book[1].findElement(By.css('img')).getAttribute('src');
+        deal.bookCover = bookCover;
+
+        dailyDeals.push(deal);
     }
-    console.log("Daily Deals:", JSON.stringify(dailyDeals));
+
     return dailyDeals;
+}
+
+async function extractISBN(metadata) {
+    let isbn = "";
+
+    
+    /**
+     * Sample return of metadata:
+     * 遠流出版
+     * 發布日期： 2023年5月15日
+     * 書籍ID：3099573278818
+     * 語言：中文
+     * 下載選項：EPUB 3 (Adobe DRM)
+     */
+    let lines = await metadata.findElements(By.css('ul > li'));
+    // for loop for each line
+
+    for (let i = 0; i < lines.length; i++) {
+        const text = await lines[i].getText();
+        if (text.includes('書籍ID')) {
+            isbn = text.split('：').pop().trim();
+            break;
+        }
+    }
+
+    return isbn;
 }
 
 (async () => {
@@ -76,14 +113,27 @@ async function extractDailyDeals(blocks) {
 
         console.log("Navigating to the latest sales link");
         await driver.get(weeklySalesLinks[0]);
-        console.log("Page title:", await driver.getTitle());
+
+        console.log("Weekly Sales Title:", await driver.getTitle());
 
         const blocks = await driver.findElements(By.css('.content-block, .book-block'));
         blocks.shift(); // Remove the first element because it's a header
 
         const dailyDeals = await extractDailyDeals(blocks);
-        console.log("Daily Deals:", dailyDeals);
+
+
+        //Add ISBN to the books
+        for (const deal of dailyDeals) {
+            console.log("Navigating to the individual book page");
+            await driver.get(deal.link);
+            const metadata = await driver.findElement(By.css('.bookitem-secondary-metadata'));
+    
+            const isbn = await extractISBN(metadata);
+            deal.isbn = isbn;
+        }
         
+        console.log("Daily Deals:", JSON.stringify(dailyDeals));
+
     } finally {
         console.log("Quitting the web driver");
         await driver.quit();
