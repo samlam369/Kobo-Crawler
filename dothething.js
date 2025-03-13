@@ -62,7 +62,7 @@ async function extractDailyDeals(blocks) {
     return dailyDeals;
 }
 
-async function extractISBN(metadata) {
+async function extractISBN(lines) {
     let isbn = "";
 
     
@@ -74,11 +74,10 @@ async function extractISBN(metadata) {
      * 語言：中文
      * 下載選項：EPUB 3 (Adobe DRM)
      */
-    let lines = await metadata.findElements(By.css('ul > li'));
-    // for loop for each line
 
     for (let i = 0; i < lines.length; i++) {
         const text = await lines[i].getText();
+        console.log("text", text);
         if (text.includes('書籍ID')) {
             isbn = text.split('：').pop().trim();
             break;
@@ -126,8 +125,7 @@ async function extractISBN(metadata) {
         for (const deal of dailyDeals) {
             console.log("Navigating to the individual book page");
             await driver.get(deal.link);
-            const metadata = await driver.findElement(By.css('.bookitem-secondary-metadata'));
-    
+            const metadata = await driver.findElements(By.css('.bookitem-secondary-metadata > ul > li'));
             const isbn = await extractISBN(metadata);
             deal.isbn = isbn;
         }
