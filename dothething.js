@@ -1,5 +1,4 @@
-const {By,Key,Builder, Capabilities} = require("selenium-webdriver");
-require("chromedriver");
+import { By, Key, Builder, Capabilities } from "selenium-webdriver";
 
 /**
  * Extract target links from the given cards.
@@ -76,6 +75,16 @@ async function extractDailyDeals(blocks) {
     return dailyDeals;
 }
 
+/**
+ * Extract the ISBN (Book ID) from the metadata.
+ * @param {WebElement[]} metadata - elements containing book metadata
+ * @returns {Promise<string>} - extracted ISBN as a string, or an empty string if not found
+ * 
+ * The metadata is expected to contain lines of text, one of which includes
+ * the '書籍ID' identifier followed by the ISBN. This function searches through
+ * the metadata to find and return the ISBN.
+ */
+
 async function extractISBN(metadata) {    
     /**
      * Sample metadata:
@@ -88,7 +97,6 @@ async function extractISBN(metadata) {
 
     for (const line of metadata) {
         const text = await line.getText();
-        // console.log("text", text);
         if (text.includes('書籍ID')) {
             return text.split('：').pop().trim();
         }
@@ -113,8 +121,6 @@ async function extractISBN(metadata) {
         console.log("Extracting blog posts on the page");
         const weeklySalesLinks = await extractWeeklySalesLinks(cards);
         
-        // console.log("All weekly sales links:", weeklySalesLinks);
-
         console.log("Navigating to the latest Weekly Sales link");
         await driver.get(weeklySalesLinks.shift());
 

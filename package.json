@@ -19,9 +19,10 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
+  "type": "module",
   "bugs": {
     "url": "https://github.com/samlam369/Kobo-Crawler/issues"
   },
   "homepage": "https://github.com/samlam369/Kobo-Crawler#readme"
 }
+
