@@ -6,7 +6,7 @@ require("chromedriver");
  * @param {WebElement[]} cards - elements of CSS selector `.card`
  * @returns {Promise<string[]>} - target links
  */
-async function extractweeklySalesLinks(cards) {
+async function extractWeeklySalesLinks(cards) {
     const weeklySalesLinks = [];
     for (const card of cards) {
         const text = await card.getText();
@@ -19,14 +19,28 @@ async function extractweeklySalesLinks(cards) {
 }
 
 
+/**
+ * Format a date string in the format "M/D" into a string in the format "YYYY-MM-DD"
+ * @param {string} dateStr - date string in the format "M/D"
+ * @returns {string} - formatted date string in the format "YYYY-MM-DD"
+ */
 function formatDate(dateStr) {
     const currentYear = new Date().getFullYear();
     const [month, day] = dateStr.split('/').map(num => num.padStart(2, '0'));
     return `${currentYear}-${month}-${day}`;
 }
 
-
-
+/**
+ * Extract daily deals from the given content blocks.
+ * @param {WebElement[]} blocks - elements of CSS selector `.book__info`
+ * @returns {Promise<Object[]>} - array of daily deals, each as an object with properties:
+ *   - date: {string} - date string in the format "YYYY-MM-DD"
+ *   - title: {string} - title of the book
+ *   - author: {string} - author of the book
+ *   - salesCopy: {string} - sales copy of the book
+ *   - link: {string} - link to the book page
+ *   - bookCover: {string} - link to the book cover image
+ */
 async function extractDailyDeals(blocks) {
     const dailyDeals = [];
     const booksOf8 = [];
@@ -62,12 +76,9 @@ async function extractDailyDeals(blocks) {
     return dailyDeals;
 }
 
-async function extractISBN(lines) {
-    let isbn = "";
-
-    
+async function extractISBN(metadata) {    
     /**
-     * Sample return of metadata:
+     * Sample metadata:
      * 遠流出版
      * 發布日期： 2023年5月15日
      * 書籍ID：3099573278818
@@ -75,16 +86,15 @@ async function extractISBN(lines) {
      * 下載選項：EPUB 3 (Adobe DRM)
      */
 
-    for (let i = 0; i < lines.length; i++) {
-        const text = await lines[i].getText();
-        console.log("text", text);
+    for (const line of metadata) {
+        const text = await line.getText();
+        // console.log("text", text);
         if (text.includes('書籍ID')) {
-            isbn = text.split('：').pop().trim();
-            break;
+            return text.split('：').pop().trim();
         }
     }
 
-    return isbn;
+    return "";
 }
 
 (async () => {
@@ -94,36 +104,30 @@ async function extractISBN(lines) {
     
 
     try {
-        /**
-         * console.log("Navigating to the Kobo blog page");
-         * await driver.manage().setTimeouts({ implicit: 5000 });
-         * await driver.get('https://www.kobo.com/zh/blog');
-         * 
-         * console.log("Waiting for card elements to load");
-         * const cards = await driver.findElements(By.css('.card'));
-         * 
-         * console.log("Extracting target links from the cards");
-         * const weeklySalesLinks = await extractweeklySalesLinks(cards);
-         */
         
-        // Hard-coding the link to the latest sales
-        const weeklySalesLinks = ['https://www.kobo.com/zh/blog/weekly-dd99-2025-w11'];
-        console.log("Weekly Sales:", weeklySalesLinks);
+        console.log("Navigating to the Kobo blog page");
+        await driver.get('https://www.kobo.com/zh/blog');
+        
+        const cards = await driver.findElements(By.css('.card'));
+        
+        console.log("Extracting blog posts on the page");
+        const weeklySalesLinks = await extractWeeklySalesLinks(cards);
+        
+        // console.log("All weekly sales links:", weeklySalesLinks);
 
-        console.log("Navigating to the latest sales link");
-        await driver.get(weeklySalesLinks[0]);
+        console.log("Navigating to the latest Weekly Sales link");
+        await driver.get(weeklySalesLinks.shift());
 
-        console.log("Weekly Sales Title:", await driver.getTitle());
+        console.log("Latest Weekly Sales:", await driver.getTitle());
 
         const blocks = await driver.findElements(By.css('.content-block, .book-block'));
         blocks.shift(); // Remove the first element because it's a header
 
         const dailyDeals = await extractDailyDeals(blocks);
 
-
-        //Add ISBN to the books
+        //Amending dailyDeals with the Kobo Book ID
         for (const deal of dailyDeals) {
-            console.log("Navigating to the individual book page");
+            console.log("Navigating to the individual book page to retrieve Book ID");
             await driver.get(deal.link);
             const metadata = await driver.findElements(By.css('.bookitem-secondary-metadata > ul > li'));
             const isbn = await extractISBN(metadata);
