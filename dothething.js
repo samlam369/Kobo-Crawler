@@ -1,4 +1,5 @@
-import { By, Key, Builder, Capabilities } from "selenium-webdriver";
+import { By, Builder } from "selenium-webdriver";
+import chrome from 'selenium-webdriver/chrome.js';
 
 /**
  * Extract target links from the given cards.
@@ -108,7 +109,12 @@ async function extractISBN(metadata) {
 (async () => {
     console.log("Starting the job");
 
-    const driver = await new Builder().forBrowser('chrome').build();
+    const driver = await new Builder()
+        .forBrowser('chrome')
+        .setChromeOptions(new chrome.Options()
+            .addArguments('--blink-settings=imagesEnabled=false')
+            .addArguments('--disable-images'))
+        .build();
     
 
     try {
@@ -147,5 +153,3 @@ async function extractISBN(metadata) {
         await driver.quit();
     }
 })();
-
-
