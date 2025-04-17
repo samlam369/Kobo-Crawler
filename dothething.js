@@ -65,7 +65,9 @@ async function extractDailyDeals(blocks) {
         deal.salesCopy = salesCopy;
 
         const link = await book[0].findElement(By.css('a')).getAttribute('href');
-        deal.link = link.split("?utm_source").shift();
+        // Use the URL object to remove query parameters and hash fragments
+        const parsedUrl = new URL(link);
+        deal.link = parsedUrl.origin + parsedUrl.pathname;
         
         const bookCover = await book[1].findElement(By.css('img')).getAttribute('src');
         deal.bookCover = bookCover;
@@ -109,11 +111,21 @@ async function extractISBN(metadata) {
 (async () => {
     console.log("Starting the job");
 
+    // Determine whether to load images based on environment variable
+    const loadImages = process.env.LOAD_IMAGES !== 'false'; // Default to true if not set or not 'false'
+
+    const chromeOptions = new chrome.Options();
+    if (!loadImages) {
+        chromeOptions.addArguments('--blink-settings=imagesEnabled=false');
+        chromeOptions.addArguments('--disable-images');
+        console.log("Image loading disabled.");
+    } else {
+        console.log("Image loading enabled.");
+    }
+
     const driver = await new Builder()
         .forBrowser('chrome')
-        .setChromeOptions(new chrome.Options()
-            .addArguments('--blink-settings=imagesEnabled=false')
-            .addArguments('--disable-images'))
+        .setChromeOptions(chromeOptions)
         .build();
     
 
@@ -139,14 +151,16 @@ async function extractISBN(metadata) {
 
         //Amending dailyDeals with the Kobo Book ID
         for (const deal of dailyDeals) {
-            console.log("Navigating to the individual book page to retrieve Book ID");
+            console.log("Navigating to the individual book page to retrieve Book ID: " + deal.title);
             await driver.get(deal.link);
             const metadata = await driver.findElements(By.css('.bookitem-secondary-metadata > ul > li'));
             const isbn = await extractISBN(metadata);
             deal.isbn = isbn;
+            // console.log(JSON.stringify(deal, null, 2));
         }
         
-        console.log("Daily Deals:", JSON.stringify(dailyDeals));
+        console.log("Daily Deals:");
+        console.log(JSON.stringify(dailyDeals, null, 2));
 
     } finally {
         console.log("Quitting the web driver");
