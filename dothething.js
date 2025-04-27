@@ -109,7 +109,8 @@ async function extractISBN(metadata) {
 }
 
 (async () => {
-    console.log("Starting the job");
+    const isCI = process.env.CI === 'true';
+    if (!isCI) console.log("Starting the job");
 
     // Determine whether to load images based on environment variable
     const loadImages = process.env.LOAD_IMAGES !== 'false'; // Default to true if not set or not 'false'
@@ -118,9 +119,9 @@ async function extractISBN(metadata) {
     if (!loadImages) {
         chromeOptions.addArguments('--blink-settings=imagesEnabled=false');
         chromeOptions.addArguments('--disable-images');
-        console.log("Image loading disabled.");
+        if (!isCI) console.log("Image loading disabled.");
     } else {
-        console.log("Image loading enabled.");
+        if (!isCI) console.log("Image loading enabled.");
     }
 
     const driver = await new Builder()
@@ -130,19 +131,18 @@ async function extractISBN(metadata) {
     
 
     try {
-        
-        console.log("Navigating to the Kobo blog page");
+        if (!isCI) console.log("Navigating to the Kobo blog page");
         await driver.get('https://www.kobo.com/zh/blog');
         
         const cards = await driver.findElements(By.css('.card'));
         
-        console.log("Extracting blog posts on the page");
+        if (!isCI) console.log("Extracting blog posts on the page");
         const weeklySalesLinks = await extractWeeklySalesLinks(cards);
         
-        console.log("Navigating to the latest Weekly Sales link");
+        if (!isCI) console.log("Navigating to the latest Weekly Sales link");
         await driver.get(weeklySalesLinks.shift());
 
-        console.log("Latest Weekly Sales:", await driver.getTitle());
+        if (!isCI) console.log("Latest Weekly Sales:", await driver.getTitle());
 
         const blocks = await driver.findElements(By.css('.content-block, .book-block'));
         blocks.shift(); // Remove the first element because it's a header
@@ -151,19 +151,24 @@ async function extractISBN(metadata) {
 
         //Amending dailyDeals with the Kobo Book ID
         for (const deal of dailyDeals) {
-            console.log("Navigating to the individual book page to retrieve Book ID: " + deal.title);
+            if (!isCI) console.log("Navigating to the individual book page to retrieve Book ID: " + deal.title);
             await driver.get(deal.link);
             const metadata = await driver.findElements(By.css('.bookitem-secondary-metadata > ul > li'));
             const isbn = await extractISBN(metadata);
             deal.isbn = isbn;
-            // console.log(JSON.stringify(deal, null, 2));
+            // if (!isCI) console.log(JSON.stringify(deal, null, 2));
         }
         
-        console.log("Daily Deals:");
-        console.log(JSON.stringify(dailyDeals, null, 2));
+        if (isCI) {
+            // For CI: print only the JSON array, single line, with a unique prefix
+            console.log('__JSON__' + JSON.stringify(dailyDeals));
+        } else {
+            console.log("Daily Deals:");
+            console.log(JSON.stringify(dailyDeals, null, 2));
+        }
 
     } finally {
-        console.log("Quitting the web driver");
+        if (!isCI) console.log("Quitting the web driver");
         await driver.quit();
     }
 })();

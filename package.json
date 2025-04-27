@@ -8,9 +8,10 @@
   "name": "kobo-crawler",
   "version": "1.0.0",
   "description": "",
-  "main": "work.js",
+  "main": "dothething.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node test.js",
+    "start": "node dothething.js"
   },
   "repository": {
     "type": "git",
