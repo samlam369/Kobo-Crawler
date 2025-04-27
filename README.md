@@ -69,3 +69,7 @@ This script is designed to be run in CI/CD environments like Jenkins.
 - A `Jenkinsfile` is included in the repository as a starting point for pipeline configuration.
 - Ensure the Jenkins execution environment has Node.js, npm, and Google Chrome installed.
 - Consider using the `LOAD_IMAGES=false` environment variable in Jenkins jobs for efficiency.
+
+## License
+
+This project is licensed under the ISC License. See the [LICENSE](./LICENSE) file for details.
