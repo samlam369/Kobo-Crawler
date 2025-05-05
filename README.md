@@ -1,4 +1,4 @@
-# Kobo Crawler
+# Kobo Crawler for 【一週99書單】
 
 This project contains a Node.js script (`dothething.js`) that scrapes the Kobo blog to find the latest weekly book deals and extracts details for each daily deal, including the ISBN.
 
@@ -12,14 +12,13 @@ This project contains a Node.js script (`dothething.js`) that scrapes the Kobo b
 
 1.  Clone the repository:
     ```bash
-    git clone <repository-url>
+    git clone https://github.com/samlam369/Kobo-Crawler.git
     cd Kobo-Crawler
     ```
 2.  Install the dependencies:
     ```bash
     npm install
     ```
-    This will install `selenium-webdriver`.
 
 ## Usage
 
