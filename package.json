@@ -5,6 +5,9 @@
     "save": "^2.9.0",
     "selenium-webdriver": "^4.29.0"
   },
+  "resolutions": {
+    "tar-fs": "3.0.9"
+  },
   "name": "kobo-crawler",
   "version": "1.0.0",
   "description": "",
