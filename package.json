@@ -1,13 +1,9 @@
 {
   "dependencies": {
-    "chromedriver": "^134.0.1",
-    "geckodriver": "^5.0.0",
-    "save": "^2.9.0",
-    "selenium-webdriver": "^4.29.0",
-    "tar-fs": "3.1.1"
+    "selenium-webdriver": "^4.50.0"
   },
-  "resolutions": {
-    "tar-fs": "3.1.1"
+  "engines": {
+    "node": ">=22"
   },
   "name": "kobo-crawler",
   "version": "1.0.0",

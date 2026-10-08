@@ -11,7 +11,7 @@ pipeline {
         }
         stage('Install Dependencies') {
             steps {
-                sh 'npm install'
+                sh 'npm ci'
             }
         }
         stage('Run Kobo Crawler') {

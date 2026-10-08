@@ -4,9 +4,12 @@ This project contains a Node.js script (`dothething.js`) that scrapes the Kobo b
 
 ## Prerequisites
 
-- Node.js (version compatible with ES Modules and async/await)
+- Node.js 22 or newer (required by Selenium)
 - npm (usually comes with Node.js)
-- Google Chrome browser installed (as the script uses ChromeDriver)
+- Google Chrome browser installed in its standard location or discoverable on `PATH`
+- Network access for Selenium Manager to discover and download a matching ChromeDriver on first use, plus a writable cache directory (normally `~/.cache/selenium`)
+
+Selenium Manager is bundled with `selenium-webdriver` and automatically manages ChromeDriver. There is no separate npm driver package to install. For proxy, offline, or custom browser installations, configure [Selenium Manager](https://www.selenium.dev/documentation/selenium_manager/) for the execution account. Offline runs need a compatible driver already provisioned or cached.
 
 ## Installation
 
@@ -17,7 +20,7 @@ This project contains a Node.js script (`dothething.js`) that scrapes the Kobo b
     ```
 2.  Install the dependencies:
     ```bash
-    npm install
+    npm ci
     ```
 
 ## Usage
@@ -66,7 +69,9 @@ The script includes error handling. If any step fails (e.g., page structure chan
 This script is designed to be run in CI/CD environments like Jenkins.
 - It exits with a non-zero status code (1) on failure, which Jenkins can use to determine build status.
 - A `Jenkinsfile` is included in the repository as a starting point for pipeline configuration.
-- Ensure the Jenkins execution environment has Node.js, npm, and Google Chrome installed.
+- Ensure the Jenkins execution environment has Node.js 22 or newer, npm, and Google Chrome installed. The pipeline uses `npm ci` to install the versions in `package-lock.json`.
+- The Jenkins account must have Selenium Manager network access and a writable cache directory. Driver downloads happen when the browser starts, rather than during npm installation.
+- The example `CHROME_BIN` variable in `Jenkinsfile` is not read by the crawler. For a nonstandard Chrome location, use Selenium Manager's `SE_CHROME_PATH` setting.
 - Consider using the `LOAD_IMAGES=false` environment variable in Jenkins jobs for efficiency.
 
 ## License
